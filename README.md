@@ -8,11 +8,9 @@ This is not performant enough to check Mathlib, but does pass many of the [Lean 
 
 As of 2026-09-13, we pass 165/198 of the Lean Kernel Arena tests within a 60s time limit. With a one-hour time limit, this rises to 179/198.
 
-Requires Bash, TeX Live (`tex`), `od`, and `awk`. Put `kernel.tex` and your `test.ndjson` in the same directory.
+Requires Python 3 and TeX Live (`tex`). Clone this repo, then run:
 
 ```sh
-set -o pipefail
-od -An -v -tu1 test.ndjson | awk '{for (i=1; i<=NF; i++) print $i} END {print 0}' | tex -halt-on-error -cnf-line=extra_mem_top=200000000 -cnf-line=extra_mem_bot=10000000 -cnf-line=max_strings=4000000 -cnf-line=pool_size=64000000 -cnf-line=hash_extra=4000000 kernel.tex > kernel.run.log &&
-awk '{printf "%c", $1}' kernel.out
+./check.py test.ndjson
 ```
-`ACCEPT` means valid, `REJECT` invalid, and `DECLINE` unsupported. TeX diagnostics are in `kernel.run.log`.
+`ACCEPT` means valid (exit 0), `REJECT` invalid (exit 1), and `DECLINE` unsupported (exit 2); runner errors exit 3. Run `timeout 30s ./check.py test.ndjson` to use the Arena's 30s limit (timeout exits 124).
